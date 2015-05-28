@@ -1,23 +1,22 @@
 import sublime, sublime_plugin
 import re
 
-PRCLT_REGEX = r'(PRCLT\..*?) = '
-PATH_REGEX = r'ui\/src\/(.*?)(.js)?$'
+PATH_REGEX = r'ui\/src\/(.*?)$'
+INDEX_JS_REGEX = r'\/index\.js$'
+JS_EXT_REGEX = r'(\.js)?$'
 
 class PrcltFinderCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         find = ''
 
+        file_name_match = re.search(PATH_REGEX, self.view.file_name())
+        if file_name_match:
+            file_name = file_name_match.group(1)
 
-        file_name = re.search(PATH_REGEX, self.view.file_name())
-        if file_name:
-            find += "require\('%s'\)" % file_name.group(1)
+            file_name = re.sub(INDEX_JS_REGEX, '(\/index)?', file_name)
+            file_name = re.sub(JS_EXT_REGEX, '(\.js)?', file_name)
 
-        prclt_region = self.view.find(PRCLT_REGEX, 0)
-        if prclt_region:
-            prclt = re.match(PRCLT_REGEX, self.view.substr(prclt_region)).group(1)
-
-            find += "|(%s\\b)" % prclt
+            find = "require\('%s'\)" % file_name
 
         if find:
             sublime.active_window().run_command('show_panel', {'panel':'find_in_files'})
