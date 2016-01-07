@@ -1,26 +1,47 @@
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 import re
+import itertools
 
-PATH_REGEX = r'ui\/src\/(.*?)$'
+PATH_REGEXS = [
+    r'ui\/src\/(.*?)$',
+    r'ui\/(?!src\/)(.*?)$',
+]
 INDEX_JS_REGEX = r'\/index\.js$'
-JS_EXT_REGEX = r'(\.js)?$'
+JS_EXT_REGEX = r'(\.jsx?)$'
+
 
 class PrcltFinderCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        find = ''
+        arrs_of_exprs = [
+            compute_file_name_regexes(self.view.file_name(), regex)
+            for regex in PATH_REGEXS]
 
-        file_name_match = re.search(PATH_REGEX, self.view.file_name())
-        if file_name_match:
-            file_name = file_name_match.group(1)
+        flat_exprs = itertools.chain.from_iterable(arrs_of_exprs)
+        exprs = list(filter(None, flat_exprs))
 
-            file_name = re.sub(INDEX_JS_REGEX, '(\/index)?', file_name)
-            file_name = re.sub(JS_EXT_REGEX, '(\.js)?', file_name)
-
-            find = "require\('%s'\)" % file_name
-
-        if find:
-            sublime.active_window().run_command('show_panel', {'panel':'find_in_files'})
+        if len(exprs):
+            find = '|'.join(exprs)
+            sublime.active_window()\
+                .run_command('show_panel',
+                             {'panel': 'find_in_files'})
             cb = sublime.get_clipboard()
             sublime.set_clipboard(find)
             sublime.active_window().run_command('paste')
             sublime.set_clipboard(cb)
+
+
+def compute_file_name_regexes(file_name, regex):
+    file_name_match = re.search(regex, file_name)
+
+    if not file_name_match:
+        return []
+
+    file_name = file_name_match.group(1)
+    file_name = re.sub(INDEX_JS_REGEX, '(\/index(\.js)?)?', file_name)
+    file_name = re.sub(JS_EXT_REGEX, '(\.jsx?)?', file_name)
+
+    return [
+        "require\('%s'\)" % file_name,
+        "import .*? from '%s'" % file_name,
+        ]
