@@ -41,7 +41,4 @@ def compute_file_name_regexes(file_name, regex):
     file_name = re.sub(INDEX_JS_REGEX, '(\/index(\.js)?)?', file_name)
     file_name = re.sub(JS_EXT_REGEX, '(\.jsx?)?', file_name)
 
-    return [
-        "require\('%s'\)" % file_name,
-        "import .*? from '%s'" % file_name,
-        ]
+    return [file_name]
