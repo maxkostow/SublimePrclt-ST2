@@ -4,8 +4,8 @@ import re
 import itertools
 
 PATH_REGEXS = [
-    r'ui\/src\/(.*?)$',
-    r'ui\/(?!src\/)(.*?)$',
+    r'src\/(.*?)$',
+    r'(?!src\/)(.*?)$',
 ]
 INDEX_JS_REGEX = r'\/index\.js$'
 JS_EXT_REGEX = r'(\.jsx?)$'
