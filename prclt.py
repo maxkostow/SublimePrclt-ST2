@@ -54,11 +54,9 @@ def compute_file_name_regexes(file_name, extracter):
     file_name = re.sub(r'src\/', '(src\/)?', file_name)
     # optional index.js
     file_name = re.sub(r'\/index\.js$', '(\/index(.js)?)?', file_name)
-    # optional .js
-    file_name = re.sub(r'(\.js)$', '(\.js)?', file_name)
     # escape other extensions
-    file_name = re.sub(r'\.((?!js$).*?)$',
-                       lambda m: '\.%s' % m.group(1),
+    file_name = re.sub(r'\.(.*?)$',
+                       lambda m: '(\.%s)?' % m.group(1),
                        file_name)
 
     return [file_name]
